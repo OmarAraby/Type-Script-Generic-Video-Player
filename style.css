@@ -157,7 +157,7 @@ section {
 .controls .progress-area .progress-bar {
   position: relative;
   width: 0%;
-  background: rgb(255, 226, 3);
+  background: var(--progress-color);
   height: inherit;
   border-radius: inherit;
   cursor: pointer;
@@ -238,9 +238,9 @@ section {
 .controls .icon .volume_range {
   -webkit-appearance: none;
   appearance: none;
-  width: 0px;
+  width: 100%;
   height: 3px;
-  background: #fff;
+  background: var(--volume-slider);
   color: #fff;
   cursor: pointer;
   outline: none;
@@ -258,7 +258,6 @@ section {
   outline: none;
   background: #fff;
   color: #fff;
-  opacity: 0;
   transition: 0.3s;
 }
 

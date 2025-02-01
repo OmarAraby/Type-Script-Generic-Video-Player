@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "module": "ESNext",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "lib": ["es2017", "dom", "es2015", "es2016.array.include", "es2017.string"],
+    "lib": ["es2017", "dom"],
     "downlevelIteration": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "dist/index.js"],
   "exclude": ["node_modules", "dist"]
 }

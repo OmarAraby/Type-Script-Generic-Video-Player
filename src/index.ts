@@ -169,7 +169,9 @@ export class VideoPlayer {
           overflow: hidden;
         }
   
-        ${/* Rest of the CSS styles from original implementation */ ""}
+        .progress-bar {
+          background-color: var(--progress-color);
+        }
       `;
   }
 
@@ -182,6 +184,9 @@ export class VideoPlayer {
 
     controlsContainer.innerHTML = this.generateControlMarkup();
     this.player.appendChild(controlsContainer);
+
+    // Log to verify controls are injected
+    console.log("Controls injected:", controlsContainer);
   }
 
   private generateControlMarkup(): string {
@@ -313,6 +318,14 @@ export class VideoPlayer {
 
   private initializeEvents(): void {
     if (!this.elements.video) return;
+
+    const progressArea =
+      this.player.querySelector<HTMLElement>(".progress-area");
+    if (progressArea) {
+      this.addEventListenerWithCleanup(progressArea, "click", (e: MouseEvent) =>
+        this.handleProgressClick(e)
+      );
+    }
 
     // Play/Pause
     if (this.elements.playPauseButton) {
@@ -544,17 +557,17 @@ export class VideoPlayer {
     return { ...this.config };
   }
 }
-
-export default VideoPlayer;
+//
+// export default VideoPlayer;
 
 // Initialize after DOM loads
 document.addEventListener("DOMContentLoaded", () => {
   VideoPlayer.init(".video_player", {
     // Appearance
-    progressColor: "#ffa600",
+    progressColor: "red",
     controlsBackground: "rgba(0, 0, 0, 0.8)",
     textColor: "#ffffff",
-    volumeSliderColor: "#ffa600",
+    volumeSliderColor: "green",
 
     // Behavior
     skipSeconds: 10,
