@@ -10,7 +10,7 @@ class VideoPlayer {
   //   inject control
   injectControls() {
     const contrlsContainer = document.createElement("div");
-    contrlsContainer.className = "controls active"; // corrected typo from 'acrive' to 'active'
+    contrlsContainer.className = "controls active";
     contrlsContainer.innerHTML = `
     <div class="progress-area">
           <canvas class="bufferedBar"></canvas>
