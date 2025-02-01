@@ -3,12 +3,14 @@ class VideoPlayer {
     this.player = playerElement;
     // this.injectStyle();
     this.injectControls();
+    this.initializeElements();
+    this.initializeEvents();
   }
 
   //   inject control
   injectControls() {
     const contrlsContainer = document.createElement("div");
-    contrlsContainer.className = "controls acrive"; // add controls attr and set it active
+    contrlsContainer.className = "controls active"; // corrected typo from 'acrive' to 'active'
     contrlsContainer.innerHTML = `
     <div class="progress-area">
           <canvas class="bufferedBar"></canvas>
@@ -54,9 +56,9 @@ class VideoPlayer {
   }
 
   // handle controls Logic
-  togflePlay() {
-    this.player.video.paused ? this.video.play() : this.video.pause();
-    this.playPauseBtn.innerHTML = this.video.paused ? "play-arrow" : "pause";
+  togglePlay() {
+    this.video.paused ? this.video.play() : this.video.pause();
+    this.playPauseBtn.innerHTML = this.video.paused ? "play_arrow" : "pause";
   }
 
   setVolume(value) {
@@ -162,3 +164,10 @@ class VideoPlayer {
     });
   }
 }
+
+//test
+document.addEventListener("DOMContentLoaded", () => {
+  const players = document.querySelectorAll(".video_player");
+  console.log("Found players:", players);
+  players.forEach((player) => new VideoPlayer(player));
+});
