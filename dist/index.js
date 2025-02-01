@@ -1,95 +1,18 @@
-// video-player.ts
-interface VideoPlayerConfig {
-  progressColor?: string;
-  controlsBackground?: string;
-  volumeSliderColor?: string;
-  textColor?: string;
-  showControls?: boolean;
-  skipSeconds?: number;
-  autoPlay?: boolean;
-  loop?: boolean;
-  muted?: boolean;
-  volume?: number;
-  icons?: {
-    play?: string;
-    pause?: string;
-    volumeUp?: string;
-    volumeDown?: string;
-    volumeOff?: string;
-    fullscreen?: string;
-    rewind?: string;
-    forward?: string;
-  };
-  controls?: {
-    showRewind?: boolean;
-    showForward?: boolean;
-    showVolume?: boolean;
-    showFullscreen?: boolean;
-    showProgress?: boolean;
-    showDuration?: boolean;
-  };
-}
-
-type VideoPlayerEvent = keyof HTMLVideoElementEventMap;
-
-interface VideoPlayerElements {
-  video?: HTMLVideoElement;
-  controlsContainer?: HTMLDivElement;
-  progressBar?: HTMLDivElement;
-  playPauseButton?: HTMLElement;
-  volumeSlider?: HTMLInputElement;
-  volumeIcon?: HTMLElement;
-  currentTime?: HTMLElement;
-  duration?: HTMLElement;
-  rewindButton?: HTMLElement;
-  forwardButton?: HTMLElement;
-  fullscreenButton?: HTMLElement;
-}
-
-export class VideoPlayer {
-  static defaultConfig: VideoPlayerConfig = {
-    progressColor: "#ffa600",
-    controlsBackground: "rgba(0, 0, 0, 0.7)",
-    volumeSliderColor: "#ffffff",
-    textColor: "#ffffff",
-    showControls: true,
-    skipSeconds: 10,
-    autoPlay: false,
-    loop: false,
-    muted: false,
-    volume: 1,
-    icons: {
-      play: "play_arrow",
-      pause: "pause",
-      volumeUp: "volume_up",
-      volumeDown: "volume_down",
-      volumeOff: "volume_off",
-      fullscreen: "fullscreen",
-      rewind: "replay_10",
-      forward: "forward_10",
-    },
-    controls: {
-      showRewind: true,
-      showForward: true,
-      showVolume: true,
-      showFullscreen: true,
-      showProgress: true,
-      showDuration: true,
-    },
-  };
-
-  private config: VideoPlayerConfig;
-  private player: HTMLElement;
-  private elements: VideoPlayerElements = {};
-  private eventListeners: Map<string, EventListener> = new Map();
-
-  constructor(playerElement: HTMLElement, config: VideoPlayerConfig = {}) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VideoPlayer = void 0;
+class VideoPlayer {
+  constructor(playerElement, config = {}) {
+    this.elements = {};
+    this.eventListeners = new Map();
     if (!(playerElement instanceof HTMLElement)) {
       throw new Error("Invalid player element provided");
     }
-
     this.player = playerElement;
-    this.config = { ...VideoPlayer.defaultConfig, ...config };
+    this.config = Object.assign(
+      Object.assign({}, VideoPlayer.defaultConfig),
+      config
+    );
     this.validateConfig();
     this.injectStyles();
     this.injectControls();
@@ -97,27 +20,25 @@ export class VideoPlayer {
     this.initializeEvents();
     this.initializeVideoState();
   }
-
-  private validateConfig(): void {
+  validateConfig() {
+    var _a, _b;
     // Validate volume
-    this.config.volume = Math.min(Math.max(this.config.volume ?? 1, 0), 1);
-
+    this.config.volume = Math.min(
+      Math.max((_a = this.config.volume) !== null && _a !== void 0 ? _a : 1, 0),
+      1
+    );
     // Validate skipSeconds
-    this.config.skipSeconds = Math.max(this.config.skipSeconds ?? 10, 1);
-
+    this.config.skipSeconds = Math.max(
+      (_b = this.config.skipSeconds) !== null && _b !== void 0 ? _b : 10,
+      1
+    );
     // Ensure boolean values
-    const booleanProps: (keyof VideoPlayerConfig)[] = [
-      "showControls",
-      "autoPlay",
-      "loop",
-      "muted",
-    ];
+    const booleanProps = ["showControls", "autoPlay", "loop", "muted"];
     booleanProps.forEach((prop) => {
-      (this.config as any)[prop] = Boolean(this.config[prop]);
+      this.config[prop] = Boolean(this.config[prop]);
     });
-
     // Validate colors
-    const colorProps: (keyof VideoPlayerConfig)[] = [
+    const colorProps = [
       "progressColor",
       "controlsBackground",
       "volumeSliderColor",
@@ -127,25 +48,22 @@ export class VideoPlayer {
       const value = this.config[color];
       if (value && typeof value === "string" && !CSS.supports("color", value)) {
         console.warn(`Invalid color value for ${color}, using default`);
-        (this.config as any)[color] = VideoPlayer.defaultConfig[color];
+        this.config[color] = VideoPlayer.defaultConfig[color];
       }
     });
-
     colorProps.forEach((color) => {
       const value = this.config[color];
       if (value && typeof value === "string" && !CSS.supports("color", value)) {
         console.warn(`Invalid color value for ${color}, using default`);
-        (this.config as any)[color] = VideoPlayer.defaultConfig[color];
+        this.config[color] = VideoPlayer.defaultConfig[color];
       }
     });
   }
-
-  static init(selector: string, config?: VideoPlayerConfig): VideoPlayer[] {
-    const players = document.querySelectorAll<HTMLElement>(selector);
+  static init(selector, config) {
+    const players = document.querySelectorAll(selector);
     return Array.from(players).map((player) => new VideoPlayer(player, config));
   }
-
-  private injectStyles(): void {
+  injectStyles() {
     const styleId = "video-player-styles";
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style");
@@ -154,8 +72,7 @@ export class VideoPlayer {
       document.head.appendChild(style);
     }
   }
-
-  private generateStyles(): string {
+  generateStyles() {
     return `
         .video-player-container {
           --progress-color: ${this.config.progressColor};
@@ -172,21 +89,17 @@ export class VideoPlayer {
         ${/* Rest of the CSS styles from original implementation */ ""}
       `;
   }
-
-  private injectControls(): void {
+  injectControls() {
     if (!this.config.showControls) return;
-
     this.player.classList.add("video-player-container");
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "controls";
-
     controlsContainer.innerHTML = this.generateControlMarkup();
     this.player.appendChild(controlsContainer);
   }
-
-  private generateControlMarkup(): string {
+  generateControlMarkup() {
+    var _a;
     const { controls = {}, icons = {} } = this.config;
-
     return `
         ${
           controls.showProgress
@@ -232,7 +145,11 @@ export class VideoPlayer {
                   <i class="material-icons volume">${icons.volumeUp}</i>
                 </span>
                 <input type="range" class="volume-range" min="0" max="100" 
-                  value="${(this.config.volume ?? 1) * 100}">
+                  value="${
+                    ((_a = this.config.volume) !== null && _a !== void 0
+                      ? _a
+                      : 1) * 100
+                  }">
               </div>
             `
                 : ""
@@ -264,56 +181,39 @@ export class VideoPlayer {
         </div>
       `;
   }
-
-  private initializeElements(): void {
+  initializeElements() {
     this.elements = {
-      video: this.player.querySelector<HTMLVideoElement>("video") || undefined,
-      controlsContainer:
-        this.player.querySelector<HTMLDivElement>(".controls") || undefined,
-      progressBar:
-        this.player.querySelector<HTMLDivElement>(".progress-bar") || undefined,
-      playPauseButton:
-        this.player.querySelector<HTMLElement>(".play-pause") || undefined,
-      volumeSlider:
-        this.player.querySelector<HTMLInputElement>(".volume-range") ||
-        undefined,
-      volumeIcon:
-        this.player.querySelector<HTMLElement>(".volume") || undefined,
-      currentTime:
-        this.player.querySelector<HTMLElement>(".current") || undefined,
-      duration:
-        this.player.querySelector<HTMLElement>(".duration") || undefined,
-      rewindButton:
-        this.player.querySelector<HTMLElement>(".rewind") || undefined,
-      forwardButton:
-        this.player.querySelector<HTMLElement>(".forward") || undefined,
-      fullscreenButton:
-        this.player.querySelector<HTMLElement>(".fullscreen") || undefined,
+      video: this.player.querySelector("video") || undefined,
+      controlsContainer: this.player.querySelector(".controls") || undefined,
+      progressBar: this.player.querySelector(".progress-bar") || undefined,
+      playPauseButton: this.player.querySelector(".play-pause") || undefined,
+      volumeSlider: this.player.querySelector(".volume-range") || undefined,
+      volumeIcon: this.player.querySelector(".volume") || undefined,
+      currentTime: this.player.querySelector(".current") || undefined,
+      duration: this.player.querySelector(".duration") || undefined,
+      rewindButton: this.player.querySelector(".rewind") || undefined,
+      forwardButton: this.player.querySelector(".forward") || undefined,
+      fullscreenButton: this.player.querySelector(".fullscreen") || undefined,
     };
   }
-  private initializeVideoState(): void {
+  initializeVideoState() {
+    var _a, _b, _c, _d;
     if (!this.elements.video) return;
-
     const { video } = this.elements;
-    video.autoplay = this.config.autoPlay ?? false;
-    video.loop = this.config.loop ?? false;
-    video.muted = this.config.muted ?? false;
-    video.volume = this.config.volume ?? 1;
+    video.autoplay =
+      (_a = this.config.autoPlay) !== null && _a !== void 0 ? _a : false;
+    video.loop = (_b = this.config.loop) !== null && _b !== void 0 ? _b : false;
+    video.muted =
+      (_c = this.config.muted) !== null && _c !== void 0 ? _c : false;
+    video.volume = (_d = this.config.volume) !== null && _d !== void 0 ? _d : 1;
   }
-
-  private addEventListenerWithCleanup<T extends Event>(
-    element: HTMLElement | HTMLVideoElement | HTMLInputElement | Window,
-    event: string,
-    handler: (event: T) => void
-  ): void {
-    const wrappedHandler = (e: Event) => handler(e as T);
+  addEventListenerWithCleanup(element, event, handler) {
+    const wrappedHandler = (e) => handler(e);
     element.addEventListener(event, wrappedHandler);
     this.eventListeners.set(`${event}-${element}`, wrappedHandler);
   }
-
-  private initializeEvents(): void {
+  initializeEvents() {
     if (!this.elements.video) return;
-
     // Play/Pause
     if (this.elements.playPauseButton) {
       this.addEventListenerWithCleanup(
@@ -322,26 +222,23 @@ export class VideoPlayer {
         this.togglePlay.bind(this)
       );
     }
-
     // Video click
     this.addEventListenerWithCleanup(
       this.elements.video,
       "click",
       this.togglePlay.bind(this)
     );
-
     // Volume
     if (this.elements.volumeSlider) {
       this.addEventListenerWithCleanup(
         this.elements.volumeSlider,
         "input",
-        (e: Event) => {
-          const target = e.target as HTMLInputElement;
+        (e) => {
+          const target = e.target;
           this.setVolume(Number(target.value));
         }
       );
     }
-
     if (this.elements.volumeIcon) {
       this.addEventListenerWithCleanup(
         this.elements.volumeIcon,
@@ -349,33 +246,41 @@ export class VideoPlayer {
         this.toggleMute.bind(this)
       );
     }
-
     // Progress
     if (this.elements.progressBar) {
       this.addEventListenerWithCleanup(
-        this.elements.progressBar.parentElement!,
+        this.elements.progressBar.parentElement,
         "click",
-        (e: MouseEvent) => this.handleProgressClick(e)
+        (e) => this.handleProgressClick(e)
       );
     }
-
     // Skip controls
     if (this.elements.rewindButton) {
       this.addEventListenerWithCleanup(
         this.elements.rewindButton,
         "click",
-        () => this.skip(-(this.config.skipSeconds ?? 10))
+        () => {
+          var _a;
+          return this.skip(
+            -((_a = this.config.skipSeconds) !== null && _a !== void 0
+              ? _a
+              : 10)
+          );
+        }
       );
     }
-
     if (this.elements.forwardButton) {
       this.addEventListenerWithCleanup(
         this.elements.forwardButton,
         "click",
-        () => this.skip(this.config.skipSeconds ?? 10)
+        () => {
+          var _a;
+          return this.skip(
+            (_a = this.config.skipSeconds) !== null && _a !== void 0 ? _a : 10
+          );
+        }
       );
     }
-
     // Fullscreen
     if (this.elements.fullscreenButton) {
       this.addEventListenerWithCleanup(
@@ -384,14 +289,12 @@ export class VideoPlayer {
         this.toggleFullscreen.bind(this)
       );
     }
-
     // Video events
     this.addEventListenerWithCleanup(
       this.elements.video,
       "timeupdate",
       this.updateProgress.bind(this)
     );
-
     this.addEventListenerWithCleanup(
       this.elements.video,
       "loadedmetadata",
@@ -404,47 +307,63 @@ export class VideoPlayer {
       }
     );
   }
-
-  public togglePlay(): void {
+  togglePlay() {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (!this.elements.video || !this.elements.playPauseButton) return;
-
     if (this.elements.video.paused) {
       this.elements.video.play();
       this.elements.playPauseButton.innerHTML =
-        this.config.icons?.pause ??
-        VideoPlayer.defaultConfig.icons?.pause ??
-        "pause";
+        (_d =
+          (_b =
+            (_a = this.config.icons) === null || _a === void 0
+              ? void 0
+              : _a.pause) !== null && _b !== void 0
+            ? _b
+            : (_c = VideoPlayer.defaultConfig.icons) === null || _c === void 0
+            ? void 0
+            : _c.pause) !== null && _d !== void 0
+          ? _d
+          : "pause";
     } else {
       this.elements.video.pause();
       this.elements.playPauseButton.innerHTML =
-        this.config.icons?.play ??
-        VideoPlayer.defaultConfig.icons?.play ??
-        "play_arrow";
+        (_h =
+          (_f =
+            (_e = this.config.icons) === null || _e === void 0
+              ? void 0
+              : _e.play) !== null && _f !== void 0
+            ? _f
+            : (_g = VideoPlayer.defaultConfig.icons) === null || _g === void 0
+            ? void 0
+            : _g.play) !== null && _h !== void 0
+          ? _h
+          : "play_arrow";
     }
   }
-
-  public setVolume(value: number): void {
+  setVolume(value) {
     if (!this.elements.video || !this.elements.volumeSlider) return;
-
     const volume = Math.min(Math.max(value / 100, 0), 1);
     this.elements.video.volume = volume;
     this.elements.volumeSlider.value = String(value);
-
     if (this.elements.volumeIcon) {
       this.elements.volumeIcon.innerHTML = this.getVolumeIcon(volume);
     }
   }
-
-  private getVolumeIcon(volume: number): string {
+  getVolumeIcon(volume) {
+    var _a, _b, _c;
     const { icons = {} } = this.config;
-    if (volume === 0) return icons.volumeOff ?? "volume_off";
-    if (volume < 0.4) return icons.volumeDown ?? "volume_down";
-    return icons.volumeUp ?? "volume_up";
+    if (volume === 0)
+      return (_a = icons.volumeOff) !== null && _a !== void 0
+        ? _a
+        : "volume_off";
+    if (volume < 0.4)
+      return (_b = icons.volumeDown) !== null && _b !== void 0
+        ? _b
+        : "volume_down";
+    return (_c = icons.volumeUp) !== null && _c !== void 0 ? _c : "volume_up";
   }
-
-  public toggleMute(): void {
+  toggleMute() {
     if (!this.elements.video) return;
-
     this.elements.video.muted = !this.elements.video.muted;
     if (this.elements.volumeSlider) {
       this.elements.volumeSlider.value = this.elements.video.muted
@@ -452,23 +371,19 @@ export class VideoPlayer {
         : String(Math.floor(this.elements.video.volume * 100));
     }
   }
-
-  private handleProgressClick(e: MouseEvent): void {
+  handleProgressClick(e) {
     if (!this.elements.progressBar || !this.elements.video) return;
-
     const rect = this.elements.progressBar.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     this.elements.video.currentTime = pos * this.elements.video.duration;
   }
-
-  public updateProgress(): void {
+  updateProgress() {
     if (
       !this.elements.video ||
       !this.elements.progressBar ||
       !this.elements.currentTime
     )
       return;
-
     const progress =
       (this.elements.video.currentTime / this.elements.video.duration) * 100;
     this.elements.progressBar.style.width = `${progress}%`;
@@ -476,17 +391,14 @@ export class VideoPlayer {
       this.elements.video.currentTime
     );
   }
-
-  public skip(seconds: number): void {
+  skip(seconds) {
     if (!this.elements.video) return;
-
     this.elements.video.currentTime = Math.min(
       Math.max(this.elements.video.currentTime + seconds, 0),
       this.elements.video.duration
     );
   }
-
-  public toggleFullscreen(): void {
+  toggleFullscreen() {
     if (!document.fullscreenElement) {
       this.player.requestFullscreen().catch((err) => {
         console.error(`Fullscreen error: ${err.message}`);
@@ -495,42 +407,33 @@ export class VideoPlayer {
       document.exitFullscreen();
     }
   }
-
-  private formatTime(seconds: number): string {
+  formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remaining = Math.floor(seconds % 60);
     return `${minutes}:${remaining.toString().padStart(2, "0")}`;
   }
-
-  public destroy(): void {
+  destroy() {
     // Remove event listeners
     this.eventListeners.forEach((handler, key) => {
       const [event, element] = key.split("-");
-      const el = element as unknown as HTMLElement;
+      const el = element;
       el.removeEventListener(event, handler);
     });
     this.eventListeners.clear();
-
     // Remove controls
     if (this.elements.controlsContainer) {
       this.elements.controlsContainer.remove();
     }
-
     // Remove player class
     this.player.classList.remove("video-player-container");
   }
-
-  public on<T extends Event>(
-    event: VideoPlayerEvent,
-    callback: (event: T) => void
-  ): void {
+  on(event, callback) {
     if (this.elements.video) {
       this.addEventListenerWithCleanup(this.elements.video, event, callback);
     }
   }
-
-  public setConfig(newConfig: Partial<VideoPlayerConfig>): void {
-    this.config = { ...this.config, ...newConfig };
+  setConfig(newConfig) {
+    this.config = Object.assign(Object.assign({}, this.config), newConfig);
     this.validateConfig();
     this.destroy();
     this.injectStyles();
@@ -539,31 +442,57 @@ export class VideoPlayer {
     this.initializeEvents();
     this.initializeVideoState();
   }
-
-  public getConfig(): VideoPlayerConfig {
-    return { ...this.config };
+  getConfig() {
+    return Object.assign({}, this.config);
   }
 }
-
-export default VideoPlayer;
-
+exports.VideoPlayer = VideoPlayer;
+VideoPlayer.defaultConfig = {
+  progressColor: "#ffa600",
+  controlsBackground: "rgba(0, 0, 0, 0.7)",
+  volumeSliderColor: "#ffffff",
+  textColor: "#ffffff",
+  showControls: true,
+  skipSeconds: 10,
+  autoPlay: false,
+  loop: false,
+  muted: false,
+  volume: 1,
+  icons: {
+    play: "play_arrow",
+    pause: "pause",
+    volumeUp: "volume_up",
+    volumeDown: "volume_down",
+    volumeOff: "volume_off",
+    fullscreen: "fullscreen",
+    rewind: "replay_10",
+    forward: "forward_10",
+  },
+  controls: {
+    showRewind: true,
+    showForward: true,
+    showVolume: true,
+    showFullscreen: true,
+    showProgress: true,
+    showDuration: true,
+  },
+};
+exports.default = VideoPlayer;
 // Initialize after DOM loads
 document.addEventListener("DOMContentLoaded", () => {
   VideoPlayer.init(".video_player", {
-    // Appearance
+    // myAppearance
     progressColor: "#ffa600",
     controlsBackground: "rgba(0, 0, 0, 0.8)",
     textColor: "#ffffff",
     volumeSliderColor: "#ffa600",
-
-    // Behavior
+    // myBehavior
     skipSeconds: 10,
     autoPlay: false,
     loop: false,
     muted: false,
     volume: 0.8,
     showControls: true, // Ensure controls are enabled
-
     // Control Visibility
     controls: {
       showRewind: true,
@@ -573,7 +502,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showProgress: true,
       showDuration: true,
     },
-
     // Custom Icons
     icons: {
       play: "play_arrow",

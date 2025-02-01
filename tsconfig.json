@@ -6,8 +6,9 @@
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "lib": ["es2017", "dom"]
+    "lib": ["es2017", "dom", "es2015", "es2016.array.include", "es2017.string"],
+    "downlevelIteration": true
   },
-  "include": ["src/*/", "build/index.js"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
