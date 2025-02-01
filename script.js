@@ -92,4 +92,73 @@ class VideoPlayer {
     const remaining = Math.floor(seconds % 60);
     return `${minutes}:${remaining.toString().padStart(2, "0")}`;
   }
+  toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      this.player.requestFullscreen().catch((err) => {
+        console.error(
+          `Error attempting to enable full-screen mode: ${err.message} (${err.name})`
+        );
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  skipTime(seconds) {
+    this.video.currentTime = Math.min(
+      Math.max(this.video.currentTime + seconds, 0),
+      this.video.duration
+    );
+    console.log(`Skipped to: ${this.video.currentTime}`);
+  }
+
+  initializeEvents() {
+    // Play/Pause
+    this.playPauseBtn.addEventListener("click", () => {
+      console.log("Play/Pause button clicked");
+      this.togglePlay();
+    });
+    this.video.addEventListener("click", () => {
+      console.log("Video clicked");
+      this.togglePlay();
+    });
+
+    // Volume
+    this.volumeSlider.addEventListener("input", (e) => {
+      console.log("Volume changed to:", e.target.value);
+      this.setVolume(e.target.value);
+    });
+    this.volumeIcon.addEventListener("click", () => {
+      console.log("volume icon clicked");
+      this.toggleMute();
+    });
+
+    // Progress
+    this.player
+      .querySelector(".progress-area")
+      .addEventListener("click", (e) => {
+        const rect = e.target.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        this.video.currentTime = pos * this.video.duration;
+        console.log("Progress clicked, new time:", this.video.currentTime);
+      });
+
+    // Fast Forward and Rewind
+    this.fastForwardBtn.addEventListener("click", () => {
+      this.skipTime(10); // Skip forward 10 seconds
+    });
+    this.fastRewindBtn.addEventListener("click", () => {
+      this.skipTime(-10); // Skip backward 10 seconds
+    });
+
+    // Fullscreen
+    this.fullscreenBtn.addEventListener("click", () => {
+      this.toggleFullscreen();
+    });
+
+    // Video events
+    this.video.addEventListener("timeupdate", () => this.updateProgress());
+    this.video.addEventListener("loadedmetadata", () => {
+      this.duration.textContent = this.formatTime(this.video.duration);
+    });
+  }
 }
